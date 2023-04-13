@@ -1,10 +1,13 @@
 package com.ala.tp.security;
 
 import com.ala.tp.service.UserDetailsServiceImpl;
+import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,19 +29,33 @@ public class securityConfig  {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
-        http.authorizeHttpRequests((requests)-> {requests.requestMatchers("/","/cat/**","/film/all","/photos/**","/images/**").permitAll();
+        http.authorizeHttpRequests((requests)-> {
+            requests.requestMatchers(HttpMethod.POST,"/api/**").permitAll();
+            requests.requestMatchers(HttpMethod.DELETE,"/api/**").permitAll();
+            requests.requestMatchers(HttpMethod.PUT,"/api/**").permitAll();
+            requests.requestMatchers("/v2/api-docs",
+                    "/swagger-resources",
+                    "/swagger-resources/**",
+                    "/configuration/ui",
+                    "/configuration/security",
+                    "/swagger-ui.html",
+                    "/webjars/**",
+                    // -- Swagger UI v3 (OpenAPI)
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**","/cat/**","/film/all","/photos/**","/images/**").permitAll();
             requests.requestMatchers("/film/new","/film/delete/**","/film/modifier/**").hasAuthority("ADMIN");
             requests.anyRequest().authenticated();
         }).formLogin((form) -> form
                 .permitAll().defaultSuccessUrl("/film/all",true/*???????*/)
         ).logout((logout) -> logout.permitAll().logoutSuccessUrl("/")).exceptionHandling().accessDeniedPage("/film/forbidden");
+                http.csrf().disable();
     return http.build();
     }
 
     @Bean
     PasswordEncoder passwordEncoder(){
          BCryptPasswordEncoder bcP = new BCryptPasswordEncoder();
-         System.out.println( bcP.encode("fat7i"));
+         System.out.println( bcP.encode("admin"));
         return bcP;
 
     }
